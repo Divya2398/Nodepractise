@@ -17,7 +17,9 @@ const userSchema= new mongoose.Schema({
     DOB:{type:String, required:true},
     VerifiedUser:{type:Boolean, required:false, default:false},
     Activestatus:{type:Boolean, required:false},
-    loginStatus:{type: Boolean, required: false, default: false}
+    lastedVisited: {type: String, required: false},
+    loginStatus:{type: Boolean, required: false, default: false},
+    firstLoginStatus:{type: Boolean, required: false, default: false}
 }, 
 {
 timeStamps:true
