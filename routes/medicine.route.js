@@ -1,12 +1,13 @@
 const router = require('express').Router();
 const medicineschema = require("../models/medicine.model");
+const {authVerify,Admin}=require("../middleware/auth");
 
 
 router.get('/',async(req,res)=>{
     res.send({"status":'received a request'})
 })
 //adding medicine detail
-router.post('/addmedicinedetail', async(req,res)=>{
+router.post('/addmedicinedetail',Admin, async(req,res)=>{
     try{
         let detail = req.body
         const data = new medicineschema(detail);
@@ -20,7 +21,7 @@ router.post('/addmedicinedetail', async(req,res)=>{
 });
 
 //getting all medicine detail
-router.get('/allmeddetail',async(req,res)=>{
+router.get('/allmeddetail',authVerify,async(req,res)=>{
     try{
         const Alldetail= await medicineschema.find().exec();
         if(Alldetail.length > 0){
@@ -62,7 +63,6 @@ router.get("/findonemedicine", async(req,res)=>{
     }
 });
 
-module.exports = router;
 //deletion of medicine
 router.delete("/deletemeddata/:medicine_uuid", async(req,res)=>{
     try {
@@ -74,3 +74,12 @@ router.delete("/deletemeddata/:medicine_uuid", async(req,res)=>{
         return res.status(400).json({"status": 'failure', 'message': error.message})
     }
 })
+
+module.exports = router;
+
+
+
+
+
+
+
