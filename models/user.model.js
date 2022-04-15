@@ -15,6 +15,7 @@ const userSchema= new mongoose.Schema({
     Address:{type:Array, required:true},
     Gender:{type: String,enum : ['male','female', 'transgender'], required:true},
     DOB:{type:String, required:true},
+    role:{type:String, enum :['admin' , 'user'], required:true},
     VerifiedUser:{type:Boolean, required:false, default:false},
     Activestatus:{type:Boolean, required:false},
     lastedVisited: {type: String, required: false},

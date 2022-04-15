@@ -12,7 +12,8 @@ const medicineschema = new mongoose.Schema({
     expiredate:{type:String, required:true , trim:true},
     usage:{ type: String, required:false },
     directionforuse:{type:String,required:true},
-    active:{ type: Boolean, required:false, default:true}
+    active:{ type: Boolean, required:false, default:true},
+    useruuid:{type:String , required:false}
 },
 
 { 
@@ -27,4 +28,4 @@ medicineschema.pre('save', function(next){
     next();
 });
 
-module.exports=mongoose.model('medicine',medicineschema);
+module.exports=mongoose.model('medicine',medicineschema); 
