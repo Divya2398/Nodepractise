@@ -89,7 +89,7 @@ router.post('/userlogin' , async(req,res)=>{
             if(userdetails.firstLoginStatus !== true){
                 await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {firstLoginStatus: true}, {new:true}).exec();
             }
-            let payload = {uuid: userdetails.uuid, role:"admin"}
+            let payload = {uuid: userdetails.uuid, role: userdetails.role}
            
             if(isMatch){
                 var Data = finddetails.toObject()//to append jwt token

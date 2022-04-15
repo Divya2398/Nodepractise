@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const medicineschema = require("../models/medicine.model");
 const {authVerify,Admin}=require("../middleware/auth");
+const userSchema= require("../models/user.model");
+const categorySchema= require("../models/category.model");
 
 
 router.get('/',async(req,res)=>{
@@ -35,7 +37,7 @@ router.get('/allmeddetail',authVerify,async(req,res)=>{
     }
 });
 //updating details 
-router.put("/medicineupdation", async(req,res)=>{
+router.put("/medicineupdation",authVerify, async(req,res)=>{
     try {
         let Access= {"uuid": req.body.uuid}
         let changedetail = req.body.changedetail;
@@ -49,7 +51,7 @@ router.put("/medicineupdation", async(req,res)=>{
 });
 
 // get single medicine details
-router.get("/findonemedicine", async(req,res)=>{
+router.get("/findonemedicine",authVerify, async(req,res)=>{
     try {
         const medicinedetail = await medicineschema.findOne({"uuid" : req.query.medicine_uuid}).exec();
         if(medicinedetail){
@@ -64,7 +66,7 @@ router.get("/findonemedicine", async(req,res)=>{
 });
 
 //deletion of medicine
-router.delete("/deletemeddata/:medicine_uuid", async(req,res)=>{
+router.delete("/deletemeddata/:medicine_uuid",authVerify, async(req,res)=>{
     try {
         console.log(req.params.medicine_uuid)
         await medicineschema.findOneAndDelete({uuid: req.params.medicine_uuid}).exec();
@@ -75,11 +77,59 @@ router.delete("/deletemeddata/:medicine_uuid", async(req,res)=>{
     }
 })
 
+//getting all products/medicine based on user who added it
+router.get("/userbasedgettingMedicine",Admin,async(req,res)=>{
+    
+    try {
+        const userBasedmedicine= await medicineschema.find({useruuid: req.query.useruuid}).exec();
+        if(userBasedmedicine.length !== null){
+          // console.log(userBasedmedicine);
+            return res.status(200).json({"status":"Success", "message":"medicine detail are fetched successfully based on user", "result":userBasedmedicine});
+         }else{
+            return res.status(404).json({"status":"success", "message":"no product under this user"});
+         } 
+    } catch (error) {
+        console.log(error.message);
+        return res.status(400).json({"status":"failure","message":error.message});
+    }
+});
+
+//aggregate=to merge/join two or more collection to fetch synced data
+//based on aggregation
+
+router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
+    try {
+        const medicinebyuser= await medicineschema.aggregate([
+            {
+                "$lookup":{ //getting user details from product collection
+                    from:"users",
+                    localField:"useruuid",
+                    foreignField:"uuid",
+                    as:"medicine_userdetail"
+                }
+            }
+        ])
+        if(medicinebyuser.length >0){
+            return res.status(200).json({"status":"success", "message":" detailes medicine and  user who added the product are fetched", "result":medicinebyuser});
+        }else{
+            return res.status(404).json({"status":"failure","message":"no medicine by this user found"});
+        }  
+    } catch (error) {
+        console.log(error.message);
+        return res.status(404).json({"status":"failure","message":error.message});
+    }
+})
+
+//creation of category
+
+router.post('/addingcategory',Admin, async(req,res)=>{
+    try {
+        const newdata= new categorySchema(req.body);
+        const create= await newdata.save()
+        return res.status(200).json({"status":"success", "message":"categories added successfully","result":create})
+    } catch (error) {
+        console.log(error.message);
+        return res.status(400).json({"status":"failure","message":error.message})     
+    }  
+})
 module.exports = router;
-
-
-
-
-
-
-
