@@ -5,7 +5,6 @@ const userSchema = require('../models/user.model');
 
 function authVerify (req,res,next){
     try {
-        console.log("verify token");
         let token = req.header("token")
         if(!token){
             return res.status(401).json({"status": "failure", "message": "Unauthorised access or acccess denied"})
