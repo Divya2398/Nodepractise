@@ -3,13 +3,14 @@ const medicineschema = require("../models/medicine.model");
 const {authVerify,Admin}=require("../middleware/auth");
 const userSchema= require("../models/user.model");
 const categorySchema= require("../models/category.model");
+const auth = require('../middleware/auth');
 
 
 router.get('/',async(req,res)=>{
     res.send({"status":'received a request'})
 })
 //adding medicine detail
-router.post('/addmedicinedetail',Admin, async(req,res)=>{
+router.post('/addmedicinedetail',authVerify, async(req,res)=>{
     try{
         let detail = req.body
         const data = new medicineschema(detail);
@@ -78,7 +79,7 @@ router.delete("/deletemeddata/:medicine_uuid",authVerify, async(req,res)=>{
 })
 
 //getting all products/medicine based on user who added it
-router.get("/userbasedgettingMedicine",Admin,async(req,res)=>{
+router.get("/userbasedgettingMedicine",authVerify,async(req,res)=>{
     
     try {
         const userBasedmedicine= await medicineschema.find({useruuid: req.query.useruuid}).exec();
@@ -101,16 +102,69 @@ router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
     try {
         const medicinebyuser= await medicineschema.aggregate([
             {
-                "$lookup":{ //getting user details from product collection
+                "$lookup":{   //getting user details from product collection
+                    from:"categories",
+                    localField:"categoryuuid",
+                    foreignField:"uuid",
+                    as:"medicine_category"
+                
+                }
+            }, 
+            {
+                $unwind:{    //to convert array into object
+                    path:"$medicine_category",
+                    preserveNullAndEmptyArrays:true
+                }
+            },
+                {
+                "$lookup":{
                     from:"users",
                     localField:"useruuid",
                     foreignField:"uuid",
                     as:"medicine_userdetail"
                 }
-            }
+            },
+            {
+                $unwind:{
+                    path:"$medicine_userdetail",
+                    preserveNullAndEmptyArrays:true
+                }
+            },
+            //mongodb operators 
+            {
+                $match:{   //to get particular category /user collection 
+                    $and:[    
+                    {"categoryuuid":req.query.categoryuuid},
+                    {"useruuid":req.query.useruuid},
+                    {"CategoryName":{$nin:[req.query.CategoryName]}} 
+                    ]
+                 }
+            },
+            {
+                $project:{
+                    "_id":0,
+                    "medicineName":1,
+                    "MRP":1,
+                    "expiredate":1,
+                    "directionforuse":1,
+                    "medicine_userdetail.Mailid":1,
+                    " medicine_userdetail.Address":1,
+                    "medicine_userdetail.UserName":1,
+                    "medicine_category.CategoryName":1
+                   /* "medicine_userdetail.":0,
+                    "medicine_userdetail.loginStatus":0,
+                    "medicine_userdetail.DOB":0,
+                    "medicine_userdetail.MobileNo":0,
+                    "medicine_userdetail.password":0,
+                    "medicine_userdetail.createdA":0,
+                    "medicine_userdetail.updatedAt":0,
+                    "useruuid":0,*/
+
+                }
+            }  
         ])
         if(medicinebyuser.length >0){
-            return res.status(200).json({"status":"success", "message":" detailes medicine and  user who added the product are fetched", "result":medicinebyuser});
+            return res.status(200).json({"status":"success", "message":" detailes of medicine , it's category and  user who added the product are fetched", "result":medicinebyuser});
         }else{
             return res.status(404).json({"status":"failure","message":"no medicine by this user found"});
         }  
@@ -132,4 +186,5 @@ router.post('/addingcategory',Admin, async(req,res)=>{
         return res.status(400).json({"status":"failure","message":error.message})     
     }  
 })
+
 module.exports = router;
