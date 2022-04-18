@@ -2,8 +2,10 @@ const router = require('express').Router();
 const bcrypt=require('bcrypt');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
+const joi = require('joi');
 
 const userSchema = require("../models/user.model");
+const {authdataSchema}= require("../validation/joischema");
 
 //signup process
 
@@ -12,7 +14,7 @@ router.post('/userfirstsignup', async(req,res)=>{
         const UserName = req.body.UserName;
         const Mailid= req.body.Mailid;
         const MobileNo = req.body.MobileNo;
-       if(UserName){
+     /*  if(UserName){
             let pattern=/[0-9]/g;
         if(pattern.test(UserName)!=true)
         {
@@ -21,9 +23,9 @@ router.post('/userfirstsignup', async(req,res)=>{
         
        }else{
         return res.status(400).json({status: "failure", message: 'Must enter the username'})
-      }
+      }*/
       if(UserName){
-        
+             
             let usernameDetail = await userSchema.findOne({'UserName': UserName}).exec()
             if(usernameDetail){
                 return res.json({status: "failure", message: 'username already exist'})
@@ -31,6 +33,7 @@ router.post('/userfirstsignup', async(req,res)=>{
 
         }
         if(Mailid){
+            
             let useremailDetail = await userSchema.findOne({'Mailid': Mailid}).exec()
             if(useremailDetail){
                 return res.json({status: "failure", message: 'email already exist'})
@@ -48,7 +51,9 @@ router.post('/userfirstsignup', async(req,res)=>{
             return res.status(400).json({status: "failure", message: 'Must enter the mobileNumber'})
         }
 
+        const newresult =  await  authdataSchema.validateAsync(req.body)
         let userdetail = new userSchema(req.body)
+
         //console.log(userdetail)
         //password hashing and salting
         let password=req.body.password;
