@@ -3,17 +3,18 @@ const crypto=require('crypto')
 
 //schema creation
 const medicineschema = new mongoose.Schema({
-    uuid: {type: String, required:false},
+    uuid: {type:String, required:false},
     medicineName:{type: String, required: true, trim: true},
     manufacturer:{type: String, required:true, trim:true},
-    MRP:{type: String, required: true},
+    MRP:{type:String, required: true},
     dosage:{type: String, required: true , trim:true },
     composition:{type:String,required:false },
-    expiredate:{type:String, required:true , trim:true},
+    expiredate:{type:String, required:true, trim:true},
     usage:{ type: String, required:false },
-    directionforuse:{type:String,required:true},
+    directionforuse:{type:String, required:true, },
     active:{ type: Boolean, required:false, default:true},
-    useruuid:{type:String , required:false}
+    useruuid:{ type:String, required:true},
+    categoryuuid:{ type:String, required:true}
 },
 
 { 

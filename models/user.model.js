@@ -1,5 +1,8 @@
 const mongoose=require('mongoose')
-const crypto=require('crypto')
+const crypto=require('crypto');
+const { truncate } = require('fs');
+const { object } = require('joi');
+
 
 
 //usermangement schema
@@ -13,7 +16,7 @@ const userSchema= new mongoose.Schema({
     MobileNo:{ type:String, required:true, trim:true, unique:true},
     password:{type:String, required:true, trim:true, unique:true},
     Address:{type:Array, required:true},
-    Gender:{type: String,enum : ['male','female', 'transgender'], required:true},
+    Gender:{type: String,enum : ['male','female', 'others'], required:true},
     DOB:{type:String, required:true},
     role:{type:String, enum :['admin' , 'user'], required:true},
     VerifiedUser:{type:Boolean, required:false, default:false},
