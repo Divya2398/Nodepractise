@@ -5,6 +5,7 @@ const crypto= require("crypto");
 const categorySchema= new mongoose.Schema({
     uuid:{type:String, require:false},
     CategoryName:{type:String, require:true, trim:true},
+    Agerestriction:{type:String,enum:["2-5yr", "10yr", "above15"] ,require:false},
     useruuid:{type:String, reuired:true}
 },
 {

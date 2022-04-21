@@ -1,7 +1,6 @@
 const mongoose=require('mongoose')
 const crypto=require('crypto');
-const { truncate } = require('fs');
-const { object } = require('joi');
+
 
 
 
@@ -25,8 +24,9 @@ const userSchema= new mongoose.Schema({
     loginStatus:{type: Boolean, required: false, default: false},
     firstLoginStatus:{type: Boolean, required: false, default: false}
 }, 
+
 {
-timeStamps:true
+    timestamps:true
 });
 
 function time(){
@@ -39,7 +39,7 @@ function time(){
 }
 
 userSchema.pre('save',function(next){
-    this.uuid = 'USER-'+crypto.pseudoRandomBytes(6).toString('hex').toUpperCase()+time();
+    this.uuid = 'USER-'+crypto.pseudoRandomBytes(6).toString('hex').toUpperCase()+time()
     console.log(this.uuid);
     next();
 });
