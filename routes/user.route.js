@@ -6,6 +6,7 @@ const joi = require('joi');
 
 const userSchema = require("../models/user.model");
 const {authdataSchema}= require("../validation/joischema");
+const mailSending= require("../middleware/email");
 
 //signup process
 
@@ -115,7 +116,7 @@ router.post('/userlogin' , async(req,res)=>{
    }
   
 })
-
+/* 
 //reset / forget password
 router.post('/userresetpasssword', async(req,res)=>{
     try {
@@ -130,7 +131,7 @@ router.post('/userresetpasssword', async(req,res)=>{
             return res.status(400).json({status:"failure", message:"you must enter the username"})
     }
           if(userdetail2){ 
-        //console.log(userdetail2);
+           console.log(userdetail2);
            let newpassword =req.body.newpassword ;
            let choice={new:true};
            let password=newpassword.password;
@@ -138,15 +139,15 @@ router.post('/userresetpasssword', async(req,res)=>{
            let Salt= await bcrypt.genSalt(10);
            newpassword.password=bcrypt.hashSync(password,Salt);
            console.log("after hashing:"+newpassword.password);
-           const change =await userSchema.findOneAndUpdate(newpassword.password, choice).exec();
+           const change =await userSchema.findOneAndUpdate({user:userdetail2.uuid},newpassword.password, choice).exec();
            return res.status(200).json({status:"success",message:"password changed successfully", result:change})
-    }
+         }
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({status:"failure", message:error.message})    
     }
           
-})
+})*/
 
 //logout process
 router.post('/userlogout', async(req,res)=>{
@@ -160,6 +161,25 @@ router.post('/userlogout', async(req,res)=>{
     }
       }
 )
+router.post("/mailApi", async(req, res)=>{
+    try {
+        const toMail = req.body.toMail;
+        const subject = req.body.subject;
+        const text = req.body.text;
+        const mailData = {
+            from: "dazzlingshinne@gmail.com",
+            to: toMail,
+            subject: subject,
+            text: text
+        }
+        let data = await mailSending.mailSending(mailData)
+        return res.status(200).json({status: "success", message: "Mail sent successfully"})
+        
+    } catch (error) {
+        console.log(error.message)
+        return res.status(500).json({status: "failure", message: error.message})
+    }
+})
 
 module.exports = router;
 

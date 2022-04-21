@@ -265,12 +265,13 @@ router.get("/CatBasedMedicinebyAggregate", async(req,res)=>{
 //time based task
 router.get("/timebasedproduct", async(req,res)=>{
     try {
-        let Startdate= req.query.Startdate;
+        let startdate= req.query.startdate;
         let enddate=req.query.enddate;
-        var start=moment(Startdate).format("YYYY-MM-DDT00:00:00.000Z");
+        var start=moment(startdate).format("YYYY-MM-DDT00:00:00.000Z");
         var end=moment(enddate).format("YYYY-MM-DDT23:59:59.000Z");
+        console.log("Startdate",startdate)
+        console.log("enddate",enddate)
         let medicinedata= await medicineschema.aggregate([
-           
             {
                 $match:{
                     $and:[
@@ -322,6 +323,7 @@ router.get("/timebasedproduct", async(req,res)=>{
         
     }
 })
+    
 
 //creation of category
 
