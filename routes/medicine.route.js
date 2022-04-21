@@ -1,9 +1,13 @@
 const router = require('express').Router();
+const joi = require('joi');
+const moment= require('moment');
+
 const medicineschema = require("../models/medicine.model");
 const {authVerify,Admin}=require("../middleware/auth");
 const userSchema= require("../models/user.model");
 const categorySchema= require("../models/category.model");
 const auth = require('../middleware/auth');
+const{productdataSchema}=require('../validation/joischema');
 
 
 router.get('/',async(req,res)=>{
@@ -12,8 +16,8 @@ router.get('/',async(req,res)=>{
 //adding medicine detail
 router.post('/addmedicinedetail',authVerify, async(req,res)=>{
     try{
-        let detail = req.body
-        const data = new medicineschema(detail);
+        const newresult =  await  productdataSchema.validateAsync(req.body)
+        const data = new medicineschema(req.body);
         const result = await data.save();
         return res.status(200).json({'status': 'it is a success', "result": result})
     }catch(error){
@@ -130,17 +134,17 @@ router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
                     preserveNullAndEmptyArrays:true
                 }
             },
+           
             //mongodb operators 
-            {
+           {
                 $match:{   //to get particular category /user collection 
                     $and:[    
                     {"categoryuuid":req.query.categoryuuid},
                     {"useruuid":req.query.useruuid},
-                    {"CategoryName":{$nin:[req.query.CategoryName]}} 
                     ]
                  }
             },
-            {
+          {
                 $project:{
                     "_id":0,
                     "medicineName":1,
@@ -151,18 +155,22 @@ router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
                     " medicine_userdetail.Address":1,
                     "medicine_userdetail.UserName":1,
                     "medicine_category.CategoryName":1
-                   /* "medicine_userdetail.":0,
-                    "medicine_userdetail.loginStatus":0,
-                    "medicine_userdetail.DOB":0,
-                    "medicine_userdetail.MobileNo":0,
-                    "medicine_userdetail.password":0,
-                    "medicine_userdetail.createdA":0,
-                    "medicine_userdetail.updatedAt":0,
-                    "useruuid":0,*/
-
+                   
                 }
-            }  
-        ])
+            } , 
+           /* {
+                $sort:{ 
+                    medicineName :1
+                }
+            },
+         {
+             $skip: parseInt(req.query.skip)
+         },
+         {
+             $limit: parseInt(req.query.limit)
+         }  */    
+            
+        ]) 
         if(medicinebyuser.length >0){
             return res.status(200).json({"status":"success", "message":" detailes of medicine , it's category and  user who added the product are fetched", "result":medicinebyuser});
         }else{
@@ -172,6 +180,147 @@ router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
         console.log(error.message);
         return res.status(404).json({"status":"failure","message":error.message});
     }
+});
+
+router.get("/CatBasedMedicinebyAggregate", async(req,res)=>{
+            try {
+                const CatMedicine= await categorySchema.aggregate([
+                   
+                  /* {
+                        $match:{
+                           $and:[
+                            {"uuid":req.query.uuid},
+                            {"useruuid":req.query.useruuid},
+                           {"Agerestriction":{$in:[req.query.Agerestriction]}}
+
+                           ]
+                         }
+                   }, */
+                    {
+                        "$lookup":{  
+                            from:"medicines",
+                            localField:"uuid",
+                            foreignField:"categoryuuid",
+                            as:"medicine_detail"
+                        
+                        }
+                    }, 
+                    {
+                        "$lookup":{
+                            from:"users",
+                            localField:"useruuid",
+                            foreignField:"uuid",
+                            as:"cat_userdetail"
+                        }
+                    },
+                    {
+                        $unwind:{   //to convert array into object
+                            path:"$medicine_detail",
+                            preserveNullAndEmptyArrays:true
+                        }
+                    },
+                    {
+                        $unwind:{
+                            path:"$cat_userdetail",
+                            preserveNullAndEmptyArrays:true
+                        }
+                    },
+                    {
+                        $project:{
+                            "_id":0,
+                            "CategoryName":1,
+                            "medicine_detail.medicineName":1,
+                            "medicine_detail.manufacturer":1,
+                            "medicine_detail.expiredate":1,
+                            "cat_userdetai.UserName":1,
+                        }
+                    },
+                    {
+                        $sort:{ 
+                           "CategoryName": -1
+                        }
+                    },
+                    {
+                        $skip: parseInt(req.query.skip)
+                     },
+                    {
+                       $limit: parseInt(req.query.limit)
+                        
+                     }
+                    
+
+                ])
+
+        if(CatMedicine.length>0){
+            return res.status(200).json({"status":"success", "message":" detailes of medicine ,category and  user who added are fetched", "result":CatMedicine});
+        }else{
+            return res.status(404).json({"status":"failure","message":"no medicine  and user found"});
+        }  
+    } catch (error) {
+        console.log(error.message);
+        return res.status(404).json({"status":"failure","message":error.message});
+    }
+    
+})
+//time based task
+router.get("/timebasedproduct", async(req,res)=>{
+    try {
+        let Startdate= req.query.Startdate;
+        let enddate=req.query.enddate;
+        var start=moment(Startdate).format("YYYY-MM-DDT00:00:00.000Z");
+        var end=moment(enddate).format("YYYY-MM-DDT23:59:59.000Z");
+        let medicinedata= await medicineschema.aggregate([
+           
+            {
+                $match:{
+                    $and:[
+                        {
+                            createdAt:{
+                                $gte: new Date(start),
+                                $lte: new Date(end)
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "$lookup":{
+                    from:"users",
+                    localField:"useruuid",
+                    foreignField:"uuid",
+                    as:"medicine_userdetail"
+                }
+            },
+            {
+                $unwind:{
+                    path:"$medicine_userdetail",
+                    preserveNullAndEmptyArrays:true
+                }
+            },
+            {
+                $project:{
+                    "_id":0,
+                    "medicineName":1,
+                    "MRP":1,
+                    "expiredate":1,
+                    "usage":1,
+                    "createdAt":1,
+                    "medicine_userdetail.UserName":1,
+                    "medicine_userdetail.Mailid":1
+                }
+
+            }
+        ])
+        if(medicinedata){
+            return res.status(200).json({"status":"success", "message":"products fetched successfully","result":medicinedata})
+        }else{
+            return res.status(400).json({"status":"failure","message":"no products found"})
+        }
+    } catch (error) {
+        console.log(error.message);
+        return res.status(404).json({"status":"failure","message":error.message}); 
+        
+    }
 })
 
 //creation of category
@@ -180,7 +329,7 @@ router.post('/addingcategory',Admin, async(req,res)=>{
     try {
         const newdata= new categorySchema(req.body);
         const create= await newdata.save()
-        return res.status(200).json({"status":"success", "message":"categories added successfully","result":create})
+        return res.status(200).json({"status":"success", "message":"categories added successfully","result": create})
     } catch (error) {
         console.log(error.message);
         return res.status(400).json({"status":"failure","message":error.message})     
