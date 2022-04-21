@@ -4,6 +4,7 @@ const mongoose=require('mongoose')
 require('dotenv').config()
 const medicineRouter = require('./routes/medicine.route');
 const userRouter = require('./routes/user.route');
+const orderRouter= require('./routes/order.route')
 
 const medic = express();
 medic.use(cors());
@@ -28,6 +29,7 @@ useUnifiedTopology: true
 medic.use(express.json());
 medic.use('/v1/medicine', medicineRouter);
 medic.use('/v2/user', userRouter);
+medic.use('/v3/order', orderRouter);
 
  medic.listen(port, ()=>{
         console.log("http://localhost:4000")
