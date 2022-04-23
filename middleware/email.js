@@ -15,6 +15,7 @@ async function mailSending(mailData){
         transporter.sendMail(mailData, (err,data)=>{
             if(err){
                 console.log("err in sending message", err.message)
+                
             }
         })
         
