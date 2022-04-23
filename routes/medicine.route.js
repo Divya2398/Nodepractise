@@ -83,7 +83,7 @@ router.delete("/deletemeddata/:medicine_uuid",authVerify, async(req,res)=>{
 })
 
 //getting all products/medicine based on user who added it
-router.get("/userbasedgettingMedicine",authVerify,async(req,res)=>{
+router.get("/userbasedgettingmedicine",authVerify,async(req,res)=>{
     
     try {
         const userBasedmedicine= await medicineschema.find({useruuid: req.query.useruuid}).exec();
@@ -102,7 +102,7 @@ router.get("/userbasedgettingMedicine",authVerify,async(req,res)=>{
 //aggregate=to merge/join two or more collection to fetch synced data
 //based on aggregation
 
-router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
+router.get("/userBasedmedicinebyaggregate", async(req,res)=>{
     try {
         const medicinebyuser= await medicineschema.aggregate([
             {
@@ -152,7 +152,7 @@ router.get("/userBasedMedicinebyAggregate", async(req,res)=>{
                     "expiredate":1,
                     "directionforuse":1,
                     "medicine_userdetail.Mailid":1,
-                    " medicine_userdetail.Address":1,
+                    "medicine_userdetail.Address":1,
                     "medicine_userdetail.UserName":1,
                     "medicine_category.CategoryName":1
                    
@@ -324,6 +324,62 @@ router.get("/timebasedproduct", async(req,res)=>{
     }
 })
     
+//expire date
+
+router.get("/expireproduct",async(req,res)=>{
+    try {
+        let now=moment().format('YYYY-MM-DD')
+        console.log(now)
+
+        // var start=moment(startdate).format("YYYY-MM-DD");
+        // var end=moment(enddate).format("YYYY-MM-DD");
+        // console.log("Startdate",startdate)
+        // console.log("enddate",enddate)
+        let expiredata= await medicineschema.aggregate([
+            
+            {
+                $match:{
+                    expiredate:{$lte:now}
+                }
+            },
+            {
+                "$lookup":{
+                    from:"users",
+                    localField:"useruuid",
+                    foreignField:"uuid",
+                    as:"medicine_userdetail"
+                }
+            },
+            {
+                $unwind:{
+                    path:"$medicine_userdetail",
+                    preserveNullAndEmptyArrays:true
+                }
+            },
+            {
+                $project:{
+                    "_id":0,
+                    "medicineName":1,
+                    "MRP":1,
+                    "expiredate":1,
+                    "usage":1,
+                    "createdAt":1,
+                    "medicine_userdetail.UserName":1,
+                    "medicine_userdetail.Mailid":1
+                }
+
+            }
+        ])
+        if(expiredata){
+            return res.status(200).json({"status":"success", "message":"products fetched successfully","result":expiredata})
+        }else{
+            return res.status(400).json({"status":"failure","message":"no products found"})
+        }
+    } catch (error) {
+        console.log(error.message)
+        return res.status(400).json({"status":"failure", "message":error.message});
+    }
+})
 
 //creation of category
 

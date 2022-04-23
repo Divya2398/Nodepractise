@@ -116,11 +116,13 @@ router.post('/userlogin' , async(req,res)=>{
    }
   
 })
-/* 
+
 //reset / forget password
 router.post('/userresetpasssword', async(req,res)=>{
     try {
         let UserName= req.body.UserName;
+        let newpassword=req.body.newpassword;
+        let choice={new:true};
         let userdetail2;
         if(UserName){
         userdetail2 = await userSchema.findOne({UserName: UserName}).exec()
@@ -132,14 +134,14 @@ router.post('/userresetpasssword', async(req,res)=>{
     }
           if(userdetail2){ 
            console.log(userdetail2);
-           let newpassword =req.body.newpassword ;
-           let choice={new:true};
-           let password=newpassword.password;
-           console.log("password before hashing:"+password);
+           console.log(newpassword);
+           //let choice={new:true};
+          // let password=newpassword.password;
+           console.log("password before hashing:"+newpassword);
            let Salt= await bcrypt.genSalt(10);
-           newpassword.password=bcrypt.hashSync(password,Salt);
-           console.log("after hashing:"+newpassword.password);
-           const change =await userSchema.findOneAndUpdate({user:userdetail2.uuid},newpassword.password, choice).exec();
+           newpassword=bcrypt.hashSync(newpassword,Salt);
+           console.log("after hashing:"+newpassword);
+           const change =await userSchema.findOneAndUpdate({uuid: userdetail2.uuid},{password:newpassword}, choice).exec();
            return res.status(200).json({status:"success",message:"password changed successfully", result:change})
          }
     } catch (error) {
@@ -147,7 +149,7 @@ router.post('/userresetpasssword', async(req,res)=>{
         return res.status(500).json({status:"failure", message:error.message})    
     }
           
-})*/
+})
 
 //logout process
 router.post('/userlogout', async(req,res)=>{
@@ -170,7 +172,8 @@ router.post("/mailApi", async(req, res)=>{
             from: "dazzlingshinne@gmail.com",
             to: toMail,
             subject: subject,
-            text: text
+            text: text,
+            html:  "<h1>HTML version of the message</h1><b>Hello world!</b>"
         }
         let data = await mailSending.mailSending(mailData)
         return res.status(200).json({status: "success", message: "Mail sent successfully"})
