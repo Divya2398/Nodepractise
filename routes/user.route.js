@@ -62,6 +62,7 @@ router.post('/userfirstsignup', async(req,res)=>{
         let salt = await bcrypt.genSalt(10);
         userdetail.password = bcrypt.hashSync(password, salt);
         let result = await userdetail.save();
+
         console.log("after hashing:"+ userdetail.password);//after hashing
 
         return res.status(200).json({status: "success", message: "user details are added successfully", data: result})
@@ -71,7 +72,7 @@ router.post('/userfirstsignup', async(req,res)=>{
     }
 });
 
-//login process
+// login process
 
 router.post('/userlogin' , async(req,res)=>{
    try {
@@ -79,7 +80,7 @@ router.post('/userlogin' , async(req,res)=>{
         let password = req.body.password;
         let userdetails;        //using select we can either get particular element or avoid particular element.
         let finddetails = await userSchema.findOne({UserName: UserName}).select('-password -_id').exec()
-        //  console.log(userdetails1);
+         console.log(userdetails1);
         if(UserName){
             userdetails = await userSchema.findOne({UserName: UserName }).exec()
             if(!userdetails){
@@ -89,8 +90,8 @@ router.post('/userlogin' , async(req,res)=>{
             return res.status(400).json({status: "failure", message: "Please enter the username"})
         }
         if(userdetails){ 
-            //console.log(userDetails);
-            //console.log(userdetails.password);
+            console.log(userDetails);
+            console.log(userdetails.password);
             let isMatch = await bcrypt.compare(password, userdetails.password)
             if(userdetails.firstLoginStatus !== true){
                 await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {firstLoginStatus: true}, {new:true}).exec();
@@ -163,28 +164,64 @@ router.post('/userlogout', async(req,res)=>{
     }
       }
 )
-router.post("/mailApi", async(req, res)=>{
+        
+router.post("/mailapi", async(req, res)=>{
     try {
+        //let link = "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_default"
         const toMail = req.body.toMail;
-        const subject = req.body.subject;
-        const text = req.body.text;
+        const subject = req.body.subject;        
         const mailData = {
-            from: "dazzlingshinne@gmail.com",
+            from: {
+                name:"DIVYA",
+                email:"divya.platosys@gmail.com", 
+            },
             to: toMail,
             subject: subject,
-            text: text,
-            html:  "<h1>HTML version of the message</h1><b>Hello world!</b>"
+            fileName: 'confirmationEmail.ejs',
+            // attachments:[
+            //     {
+            //         filename:'dd.pdf',
+            //         filePath:'C:/marksheet/dd.pdf'              
+            //     }
+            // ],
+            details:{
+                name: "DIVYA",
+                date: new Date(),
+                link: "https://www.w3schools.com/html/tryit.asp?filename=tryhtml_default"
+            }
         }
-        let data = await mailSending.mailSending(mailData)
-        return res.status(200).json({status: "success", message: "Mail sent successfully"})
-        
+        await mailSending.mailSending(mailData).then(data=>{
+            return res.status(200).json({status: "success", message: "Mail sent successfully"}) 
+        }).catch((error)=>{
+            return res.status(400).json({status: "failure", message: "Mail sent failed"})
+        })
     } catch (error) {
         console.log(error.message)
         return res.status(500).json({status: "failure", message: error.message})
     }
 })
 
+
+// router.post('/verifymail',async(req,res)=>{
+//     try {
+//         const toMail = req.body.toMail;
+//         const subject = req.body.subject; 
+//         const mailData={
+//             from: "dazzlingshinne@gmail.com",
+//             to: toMail,
+//             subject: subject,
+//             fileName: 'verification.ejs',
+//         }
+//         await mailSending.mailSending(mailData).then(data=>{
+//             return res.status(200).json({"status":"success","messsage":"mail sent successfully"})
+//         })
+//     } catch (error) {
+//         console.log(error.message)
+//         return res.status(500).json({"status":"failure","message":error.message})
+//     }
+// })
+
+
 module.exports = router;
-
-
+        
  
