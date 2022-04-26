@@ -1,10 +1,31 @@
 const express=require('express')
 const cors=require('cors')
 const mongoose=require('mongoose')
+const sgMail= require('@sendgrid/mail')
 require('dotenv').config()
 const medicineRouter = require('./routes/medicine.route');
 const userRouter = require('./routes/user.route');
-const orderRouter= require('./routes/order.route')
+const orderRouter= require('./routes/order.route');
+const API_KEY=
+'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'
+
+// sgMail.setApiKey(API_KEY)
+
+// const message={
+//    // to:'sdivyalakshmi98@gmail.com',
+//     to:['sdivyalakshmi98@gmail.com', 'divya.platosys@gmail.com','anitha.platosys@gmail.com'],
+//     from:{
+//         name: 'DIVYA',
+//         email:'divya.platosys@gmail.com'
+//     },
+//     subject:'test mail',
+//     text:'hello all',
+//     html:'<h1>hello all</h1>'
+// }
+// sgMail.send(message)
+// .then(response=> console.log('Email sent successfully...'))
+// .catch(error=> console.log(error.message))
+
 
 const medic = express();
 medic.use(cors());
@@ -32,6 +53,6 @@ medic.use('/v2/user', userRouter);
 medic.use('/v3/order', orderRouter);
 
  medic.listen(port, ()=>{
-        console.log("http://localhost:4000")
+ console.log("http://localhost:4000")
          
  })
