@@ -1,21 +1,39 @@
 const nodemailer = require('nodemailer');
+const ejs = require('ejs');
+const {join} = require('path')
 
-const transporter = nodemailer.createTransport({
-    port: 465,
-    host: "smtp.gmail.com",
-    auth:{
-        user: "dazzlingshinne@gmail.com",
-        pass: "shineedazzling"
-    },
-});
+const  sgMail = require('@sendgrid/mail')
+const API_KEY=
+'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'
+sgMail.setApiKey(API_KEY)
 
-async function mailSending(mailData){
+// const transporter = nodemailer.createTransport({
+//     port: 465,
+//     host: "smtp.gmail.com",
+//     auth:{
+//         user: "dazzlingshinne@gmail.com",
+//         pass: "shineedazzling"
+//     },
+// });
+
+async function mailSending (mailData){
     try {
-        
-        transporter.sendMail(mailData, (err,data)=>{
+       // console.log(mailData.attachments)
+        const data = await ejs.renderFile(join(__dirname,'../templates/', mailData.fileName), mailData,mailData.details)
+        const mailDetails = {
+            from:mailData.from,
+            to:mailData.to,
+            subject:mailData.subject,
+           // attachments: mailData.attachments,
+            html:data
+        }
+        //transporter.sendMail(mailDetails, (err, data)=>{
+            sgMail.send(mailDetails, (err, data)=>{
             if(err){
-                console.log("err in sending message", err.message)
-                
+                console.log("err", err.message)
+            }else{
+                console.log("Mail sent successfully");
+                return 1
             }
         })
         
