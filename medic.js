@@ -6,7 +6,7 @@ require('dotenv').config()
 const medicineRouter = require('./routes/medicine.route');
 const userRouter = require('./routes/user.route');
 const orderRouter= require('./routes/order.route');
-const API_KEY=''
+//const API_KEY=''
 
 
 // sgMail.setApiKey(API_KEY)
