@@ -173,7 +173,7 @@ router.post("/mailapi", async(req, res)=>{
         const mailData = {
             from: {
                 name:"DIVYA",
-                email:"divya.platosys@gmail.com", 
+                email:"divya.@gmail.com", 
             },
             to: toMail,
             subject: subject,
