@@ -16,7 +16,7 @@ const orderRouter= require('./routes/order.route');
 //     to:['sdivyalakshmi98@gmail.com', 'divya.platosys@gmail.com','anitha.platosys@gmail.com'],
 //     from:{
 //         name: 'DIVYA',
-//         email:'divya.platosys@gmail.com'
+//         email:'divya@gmail.com'
 //     },
 //     subject:'test mail',
 //     text:'hello all',
