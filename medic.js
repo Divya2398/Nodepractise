@@ -1,7 +1,9 @@
 const express=require('express')
 const cors=require('cors')
 const mongoose=require('mongoose')
-const sgMail= require('@sendgrid/mail')
+//const sgMail= require('@sendgrid/mail')
+
+
 require('dotenv').config()
 const medicineRouter = require('./routes/medicine.route');
 const userRouter = require('./routes/user.route');
@@ -13,10 +15,10 @@ const orderRouter= require('./routes/order.route');
 
 // const message={
 //    // to:'sdivyalakshmi98@gmail.com',
-//     to:['sdivyalakshmi98@gmail.com'],
+//     to:['sdivyalakshmi98@gmail.com', 'divya.platosys@gmail.com','anitha.platosys@gmail.com'],
 //     from:{
 //         name: 'DIVYA',
-//         email:'divya@gmail.com'
+//         email:'divya.platosys@gmail.com'
 //     },
 //     subject:'test mail',
 //     text:'hello all',
