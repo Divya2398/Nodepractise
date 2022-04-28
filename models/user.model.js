@@ -22,7 +22,8 @@ const userSchema= new mongoose.Schema({
     Activestatus:{type:Boolean, required:false},
     lastedVisited: {type: String, required: false},
     loginStatus:{type: Boolean, required: false, default: false},
-    firstLoginStatus:{type: Boolean, required: false, default: false}
+    firstLoginStatus:{type: Boolean, required: false, default: false},
+    otp:{type: String, required: false,}
 }, 
 
 {
