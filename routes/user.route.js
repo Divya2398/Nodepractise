@@ -3,6 +3,8 @@ const bcrypt=require('bcrypt');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const joi = require('joi');
+const{totp} = require('otplib');
+const fast2sms = require('fast-two-sms')
 
 const userSchema = require("../models/user.model");
 const {authdataSchema}= require("../validation/joischema");
@@ -80,7 +82,7 @@ router.post('/userlogin' , async(req,res)=>{
         let password = req.body.password;
         let userdetails;        //using select we can either get particular element or avoid particular element.
         let finddetails = await userSchema.findOne({UserName: UserName}).select('-password -_id').exec()
-         console.log(userdetails1);
+         //console.log(userdetails1);
         if(UserName){
             userdetails = await userSchema.findOne({UserName: UserName }).exec()
             if(!userdetails){
@@ -90,7 +92,7 @@ router.post('/userlogin' , async(req,res)=>{
             return res.status(400).json({status: "failure", message: "Please enter the username"})
         }
         if(userdetails){ 
-            console.log(userDetails);
+            console.log(userdetails);
             console.log(userdetails.password);
             let isMatch = await bcrypt.compare(password, userdetails.password)
             if(userdetails.firstLoginStatus !== true){
@@ -101,9 +103,28 @@ router.post('/userlogin' , async(req,res)=>{
             if(isMatch){
                 var Data = finddetails.toObject()//to append jwt token
                 let jwttoken = jwt.sign(payload, process.env.secrectKey)
-                Data.jwttoken = jwttoken 
-                await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {loginStatus: true}, {new:true}).exec() //for changing login status=true    
+                Data.jwttoken = jwttoken;
+                const seed = 'secret_key23'
+                const token = totp.generate(seed)
+                console.log(token); 
+                await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {otp: token}, {new:true}).exec() 
+                var option = {
+                    authorization:" enter fast 2 sms API key here ",
+                    message: "your otp code for login is--"+token,
+                    numbers:[ userdetails.MobileNo]
+                };
+
+                fast2sms.sendMessage(option)
+                .then((response)=>{
+                    console.log(response)
+                })
+                .catch((error)=>{
+                    console.log(error)
+                })
+
+               // await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {loginStatus: true}, {new:true}).exec()  //for changing login status=true    
               return res.status(200).json({status: "success", message: "Login successfully", data: {Data}})
+              
             }else{
                 return res.status(200).json({status: "failure", message: "your Login failed"})
             }  
@@ -171,17 +192,15 @@ router.post("/mailapi", async(req, res)=>{
         const toMail = req.body.toMail;
         const subject = req.body.subject;        
         const mailData = {
-            from: {
-                name:"DIVYA",
-                email:"divya.@gmail.com", 
-            },
+            from: "divya.platosys@gmail.com",
+               // name:"DIVYA",
             to: toMail,
             subject: subject,
             fileName: 'confirmationEmail.ejs',
             // attachments:[
             //     {
-            //         filename:'dd.pdf',
-            //         filePath:'C:/marksheet/dd.pdf'              
+            //         filename:'dd',
+            //         filePath:'../picture/dd.pdf'            
             //     }
             // ],
             details:{
