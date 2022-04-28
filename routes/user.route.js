@@ -111,7 +111,7 @@ router.post('/userlogin' , async(req,res)=>{
                 token =  verifyotp.verifyotp('send')
                 await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {otp: token}, {new:true}).exec() 
                 var option = {
-                    authorization:"***givee fast2sms API here**",
+                    authorization:"***give fast2sms API here**",
                     message: "your otp code for login is--"+token,
                     numbers:[ userdetails.MobileNo]
                 };
