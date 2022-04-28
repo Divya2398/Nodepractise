@@ -12,10 +12,12 @@ function verifyotp(type){
         const secretkey="divya_otp_23";
     const token = totp.generate(secretkey)
     console.log("token:"+ token)
+    return token
     }else if(type == 'resend'){
         const secretkey= 'divya_otp_23'
         const token = totp.generate(secretkey)
         console.log("resend token:"+ token)
+        return token
     }
     
 }
