@@ -9,6 +9,7 @@ const fast2sms = require('fast-two-sms')
 const userSchema = require("../models/user.model");
 const {authdataSchema}= require("../validation/joischema");
 const mailSending= require("../middleware/email");
+const verifyotp = require("../middleware/sms");
 
 //signup process
 
@@ -104,16 +105,16 @@ router.post('/userlogin' , async(req,res)=>{
                 var Data = finddetails.toObject()//to append jwt token
                 let jwttoken = jwt.sign(payload, process.env.secrectKey)
                 Data.jwttoken = jwttoken;
-                const seed = 'secret_key23'
-                const token = totp.generate(seed)
-                console.log(token); 
+                // const seed = 'secret_key23'
+                // const token = totp.generate(seed)
+                // console.log(token); 
+                token =  verifyotp.verifyotp('send')
                 await userSchema.findOneAndUpdate({uuid: userdetails.uuid}, {otp: token}, {new:true}).exec() 
                 var option = {
-                    authorization:" enter fast 2 sms API key here ",
+                    authorization:"***type fast 2 sms API hereS",
                     message: "your otp code for login is--"+token,
                     numbers:[ userdetails.MobileNo]
                 };
-
                 fast2sms.sendMessage(option)
                 .then((response)=>{
                     console.log(response)
