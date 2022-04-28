@@ -2,19 +2,27 @@ const nodemailer = require('nodemailer');
 const ejs = require('ejs');
 const {join} = require('path')
 
-const  sgMail = require('@sendgrid/mail')
-//const API_KEY=''
-//sgMail.setApiKey(API_KEY)
+// const  sgMail = require('@sendgrid/mail')
+// const API_KEY=
+// 'enter api key'
+// sgMail.setApiKey(API_KEY)
 
 // const transporter = nodemailer.createTransport({
 //     port: 465,
-//     host: "smtp.gmail.com",
+//     host:"smtp.gmail.com",
 //     auth:{
-//         user: "dazzlingshinne@gmail.com",
-//         pass: "shineedazzling"
-//     },
+//         user:"dazzlingshinne@gmail.com",
+//         pass:"shineedazzling"
+//     }
 // });
-
+const transporter = nodemailer.createTransport({
+    port: 465,
+    host:"smtp.sendgrid.net",
+    auth:{
+        user:"apikey",
+        pass:"give sendgrid apikey here"
+    }
+});
 async function mailSending (mailData){
     try {
        // console.log(mailData.attachments)
@@ -26,8 +34,8 @@ async function mailSending (mailData){
            // attachments: mailData.attachments,
             html:data
         }
-        //transporter.sendMail(mailDetails, (err, data)=>{
-            sgMail.send(mailDetails, (err, data)=>{
+        transporter.sendMail(mailDetails, (err, data)=>{
+          // sgMail.send(mailDetails, (err, data)=>{
             if(err){
                 console.log("err", err.message)
             }else{
